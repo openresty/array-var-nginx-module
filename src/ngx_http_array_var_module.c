@@ -389,17 +389,17 @@ ngx_http_array_var_split(ngx_http_request_t *r,
         pos = last + sep->len;
     }
 
-    if (pos < end) {
-        s = ngx_array_push(array);
-        if (s == NULL) {
-            return NGX_ERROR;
-        }
+    dd("pos %p, last %p, end %p", pos, last, end);
 
-        s->data = pos;
-        s->len = end - pos;
-
-        dd("split item %.*s", s->len, s->data);
+    s = ngx_array_push(array);
+    if (s == NULL) {
+        return NGX_ERROR;
     }
+
+    s->data = pos;
+    s->len = end - pos;
+
+    dd("split item %.*s", s->len, s->data);
 
     dd("split: array size: %d", array->nelts);
     dd("split array ptr: %p", array);

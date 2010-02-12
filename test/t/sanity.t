@@ -3,7 +3,8 @@
 use lib 'lib';
 use Test::Nginx::Socket;
 
-repeat_each(3);
+#repeat_each(3);
+repeat_each(1);
 
 plan tests => repeat_each() * 2 * blocks();
 
@@ -43,7 +44,7 @@ nomas
 
 
 
-=== TEST 3: array split/join (empty)
+=== TEST 3: array split/join (empty array)
 --- config
     location /foo {
         array_split ',' $arg_names to=$names;
@@ -54,4 +55,18 @@ nomas
 GET /foo?
 --- response_body
 []
+
+
+
+=== TEST 4: array split/join (list of empty values)
+--- config
+    location /foo {
+        array_split ',' $arg_names to=$names;
+        array_join '+' $names;
+        echo "[$names]";
+    }
+--- request
+GET /foo?names=,,,
+--- response_body
+[+++]
 
