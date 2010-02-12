@@ -279,6 +279,7 @@ ngx_http_array_map(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
                     "%V: expecting the \"to\" option at "
                     "the 3rd argument: \"%V\"",
                     &cmd->name, &value[3]);
+
             return NGX_CONF_ERROR;
         }
 
@@ -338,6 +339,7 @@ ngx_http_array_map_op(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
         if (cf->args->nelts > 3 + 1) {
             bad_arg = &value[4];
+
         } else {
             return ndk_set_var_multi_value_core(cf, &target, &value[1],
                     &filter);
@@ -353,7 +355,6 @@ ngx_http_array_map_op(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
     return NGX_CONF_ERROR;
 }
-
 
 
 static char *
@@ -636,7 +637,7 @@ ngx_http_array_var_map_op(ngx_http_request_t *r,
     }
 
     res->data = (u_char *) new_array;
-    res->len = sizeof(ngx_array_t *);
+    res->len = sizeof(ngx_array_t);
 
     return NGX_OK;
 }
