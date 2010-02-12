@@ -6,6 +6,8 @@
 #include <ngx_http.h>
 
 
+ngx_int_t ngx_http_array_var_add_variable(ngx_conf_t *cf, ngx_str_t *name);
+
 u_char * ngx_http_array_var_strlstrn(u_char *s1, u_char *last, u_char *s2,
         size_t n);
 

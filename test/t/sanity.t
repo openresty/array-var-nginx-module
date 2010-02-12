@@ -70,3 +70,31 @@ GET /foo?names=,,,
 --- response_body
 [+++]
 
+
+=== TEST 4: array map
+--- config
+    location /foo {
+        array_split ',' $arg_names to=$names;
+        array_map 'hi' $names;
+        array_join '+' $names;
+        echo "[$names]";
+    }
+--- request
+GET /foo?names=,,,
+--- response_body
+[hi+hi+hi+hi]
+
+
+=== TEST 4: array map
+--- config
+    location /foo {
+        array_split ',' $arg_names to=$names;
+        array_map '[$array_it]' $names;
+        array_join '+' $names;
+        echo "$names";
+    }
+--- request
+GET /foo?names=bob,marry,nomas
+--- response_body
+[bob]+[marry]+[nomas]
+

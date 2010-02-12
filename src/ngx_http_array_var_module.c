@@ -1,10 +1,11 @@
-#define DDEBUG 1
+#define DDEBUG 0
 #include "ddebug.h"
 
 #include "ngx_http_array_var_util.h"
 
 #include <ndk.h>
 
+static ngx_str_t  ngx_http_array_it_key = ngx_string("array_it");
 
 typedef struct {
     ngx_uint_t          nargs;
@@ -30,7 +31,10 @@ static char * ngx_http_array_split(ngx_conf_t *cf, ngx_command_t *cmd,
 static char * ngx_http_array_map(ngx_conf_t *cf, ngx_command_t *cmd,
         void *conf);
 
-static char * ngx_http_array_join_or_map_op(ngx_conf_t *cf, ngx_command_t *cmd,
+static char * ngx_http_array_map_op(ngx_conf_t *cf, ngx_command_t *cmd,
+        void *conf);
+
+static char * ngx_http_array_join(ngx_conf_t *cf, ngx_command_t *cmd,
         void *conf);
 
 static ngx_int_t ngx_http_array_var_split(ngx_http_request_t *r,
@@ -69,7 +73,7 @@ static ngx_command_t  ngx_http_array_var_commands[] = {
         ngx_string ("array_map_op"),
         NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_SIF_CONF
             |NGX_HTTP_LOC_CONF|NGX_HTTP_LIF_CONF|NGX_CONF_TAKE23,
-        ngx_http_array_join_or_map_op,
+        ngx_http_array_map_op,
         0,
         0,
         ngx_http_array_var_map_op
@@ -78,7 +82,7 @@ static ngx_command_t  ngx_http_array_var_commands[] = {
         ngx_string("array_join"),
         NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_SIF_CONF
             |NGX_HTTP_LOC_CONF|NGX_HTTP_LIF_CONF|NGX_CONF_TAKE23,
-        ngx_http_array_join_or_map_op,
+        ngx_http_array_join,
         0,
         0,
         ngx_http_array_var_join
@@ -217,8 +221,8 @@ unexpected_arg:
 static char *
 ngx_http_array_map(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
-    ndk_set_var_t                       filter;
-    ngx_str_t                           target;
+    ndk_set_var_t                        filter;
+    ngx_str_t                            target;
     ngx_str_t                           *value;
     ngx_http_array_map_data_t           *data;
     ngx_http_compile_complex_value_t     ccv;
@@ -253,8 +257,16 @@ ngx_http_array_map(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     filter.data = data;
     filter.size = 1;
 
+    data->array_it_index = ngx_http_array_var_add_variable(cf,
+            &ngx_http_array_it_key);
+
+    if (data->array_it_index == NGX_ERROR) {
+        return NGX_CONF_ERROR;
+    }
+
     if (cf->args->nelts == 2 + 1) {
         /* array_map $template $array */
+        data->in_place = 1;
         target = value[2];
 
     } else {
@@ -272,6 +284,7 @@ ngx_http_array_map(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
         target.data = value[3].data + sizeof("to=") - 1;
         target.len = value[3].len - (sizeof("to=") - 1);
+        data->in_place = 0;
     }
 
     return ndk_set_var_value_core(cf, &target, &value[2], &filter);
@@ -279,7 +292,72 @@ ngx_http_array_map(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
 
 static char *
-ngx_http_array_join_or_map_op(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+ngx_http_array_map_op(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+{
+    ngx_http_array_map_op_data_t    *data;
+    ndk_set_var_t                    filter;
+    ngx_str_t                        target;
+    ngx_str_t                       *value;
+    ngx_str_t                       *bad_arg;
+
+    data = ngx_palloc(cf->pool, sizeof(ngx_http_array_map_op_data_t));
+    if (data == NULL) {
+        return NGX_CONF_ERROR;
+    }
+
+    filter.type = NDK_SET_VAR_MULTI_VALUE_DATA;
+    filter.func = (ndk_set_var_value_pt) cmd->post;
+    filter.data = data;
+
+    value = cf->args->elts;
+
+    if (cf->args->nelts == 2 + 1) {
+        dd("array_join $sep $var");
+
+        filter.size = 2;
+        data->in_place = 1;
+
+        target = value[2];
+
+        dd("array join target: %.*s", target.len, target.data);
+
+        return ndk_set_var_multi_value_core(cf, &target, &value[1], &filter);
+    }
+
+    /* cf->args->nelts == 3 + 1 */
+
+    if (value[3].len >= sizeof("to=") - 1
+            && ngx_str3cmp(value[3].data, 't', 'o', '='))
+    {
+        /* array_join $sep $str to=$array */
+        filter.size = 2;
+        data->in_place = 0;
+
+        target.data = value[3].data + sizeof("to=") - 1;
+        target.len = value[3].len - (sizeof("to=") - 1);
+
+        if (cf->args->nelts > 3 + 1) {
+            bad_arg = &value[4];
+        } else {
+            return ndk_set_var_multi_value_core(cf, &target, &value[1],
+                    &filter);
+        }
+
+    } else {
+        bad_arg = &value[3];
+    }
+
+    ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
+            "%V: unexpected argument \"%V\"",
+            &cmd->name, bad_arg);
+
+    return NGX_CONF_ERROR;
+}
+
+
+
+static char *
+ngx_http_array_join(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
     ndk_set_var_t                    filter;
     ngx_str_t                        target;
@@ -319,6 +397,7 @@ ngx_http_array_join_or_map_op(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
             return ndk_set_var_multi_value_core(cf, &target, &value[1],
                     &filter);
         }
+
     } else {
         bad_arg = &value[3];
     }
@@ -421,7 +500,11 @@ ngx_http_array_var_map(ngx_http_request_t *r,
     ngx_str_t                       *value, *new_value;
     ngx_array_t                     *array, *new_array;
 
+    dd("entered array var map");
+
     if (conf->template == NULL) {
+        dd("template empty");
+
         return NGX_OK;
     }
 
@@ -449,9 +532,16 @@ ngx_http_array_var_map(ngx_http_request_t *r,
         }
     }
 
+    dd("array var map: array size: %d", array->nelts);
+
+    array_it->not_found = 0;
+    array_it->valid = 1;
+
     for (i = 0; i < array->nelts; i++) {
         array_it->data = value[i].data;
         array_it->len = value[i].len;
+
+        dd("array it: %.*s", array_it->len, array_it->data);
 
         if (conf->in_place) {
             new_value = &value[i];
@@ -466,6 +556,8 @@ ngx_http_array_var_map(ngx_http_request_t *r,
         if (ngx_http_complex_value(r, conf->template, new_value) != NGX_OK) {
             return NGX_ERROR;
         }
+
+        dd("array var map: new item: %.*s", new_value->len, new_value->data);
     }
 
     res->data = (u_char *) new_array;
