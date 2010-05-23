@@ -419,7 +419,7 @@ ngx_http_array_var_split(ngx_http_request_t *r,
     ngx_http_variable_value_t               *sep, *str;
     ngx_str_t                               *s;
     u_char                                  *pos, *end, *last;
-    ssize_t                                  max;
+    ssize_t                                  max, i;
     ngx_array_t                             *array;
 
     if (conf->nargs == 3) {
@@ -453,10 +453,12 @@ ngx_http_array_var_split(ngx_http_request_t *r,
     pos = str->data;
     end = str->data + str->len;
 
+    i = 0;
+
     if (sep->len == 0) {
         /* split each char into an array elem */
 
-        while (pos != end) {
+        while (i != max - 1 && pos < end - 1) {
             s = ngx_array_push(array);
             if (s == NULL) {
                 return NGX_ERROR;
@@ -466,13 +468,14 @@ ngx_http_array_var_split(ngx_http_request_t *r,
             s->len = 1;
 
             pos++;
+            i++;
         }
 
         goto done;
     }
 
-    while ((last = ngx_http_array_var_strlstrn(pos, end, sep->data,
-                    sep->len - 1)))
+    while (i != max - 1 && (last = ngx_http_array_var_strlstrn(pos, end,
+                    sep->data, sep->len - 1)))
     {
         s = ngx_array_push(array);
         if (s == NULL) {
@@ -485,8 +488,10 @@ ngx_http_array_var_split(ngx_http_request_t *r,
         dd("split item %.*s", s->len, s->data);
 
         pos = last + sep->len;
+        i++;
     }
 
+done:
     dd("pos %p, last %p, end %p", pos, last, end);
 
     s = ngx_array_push(array);
@@ -502,7 +507,6 @@ ngx_http_array_var_split(ngx_http_request_t *r,
     dd("split: array size: %d", array->nelts);
     dd("split array ptr: %p", array);
 
-done:
     res->data = (u_char *) array;
     res->len = sizeof(ngx_array_t);
 

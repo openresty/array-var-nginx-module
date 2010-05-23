@@ -30,7 +30,63 @@ Bob+Marry+John
 
 
 
-=== TEST 2: array split (empty split sep)
+=== TEST 2: array split/join (non-empty sep with a limit)
+--- config
+    location /foo {
+        array_split ',' $arg_names 2 to=$names;
+        array_join '+' $names;
+        echo $names;
+    }
+--- request
+GET /foo?names=Bob,Marry,John
+--- response_body
+Bob+Marry,John
+
+
+
+=== TEST 3: array split/join (non-empty sep with a ZERO limit)
+--- config
+    location /foo {
+        array_split ',' $arg_names 0 to=$names;
+        array_join '+' $names;
+        echo $names;
+    }
+--- request
+GET /foo?names=Bob,Marry,John
+--- response_body
+Bob+Marry+John
+
+
+
+=== TEST 4: array split/join (emtpy sep with a limit)
+--- config
+    location /foo {
+        array_split '' $arg_names 2 to=$names;
+        array_join '+' $names;
+        echo $names;
+    }
+--- request
+GET /foo?names=Bob
+--- response_body
+B+ob
+
+
+
+=== TEST 5: array split/join (emtpy sep with a ZERO limit)
+--- config
+    location /foo {
+        array_split '' $arg_names 0 to=$names;
+        array_join '+' $names;
+        echo $names;
+    }
+--- request
+GET /foo?names=Bob
+--- response_body
+B+o+b
+
+
+
+=== TEST 6: array split (empty split sep)
 --- config
     location /foo {
         array_split '' $arg_names to=$names;
@@ -44,7 +100,7 @@ B+o+b
 
 
 
-=== TEST 3: array split (empty split/join sep)
+=== TEST 7: array split (empty split/join sep)
 --- config
     location /foo {
         array_split '' $arg_names to=$names;
@@ -58,7 +114,7 @@ GET /foo?names=Bob
 
 
 
-=== TEST 4: array split (empty split + empty input)
+=== TEST 8: array split (empty split + empty input)
 --- config
     location /foo {
         array_split '' $arg_names to=$names;
@@ -72,7 +128,7 @@ GET /foo?
 
 
 
-=== TEST 5: array split/join (single item)
+=== TEST 9: array split/join (single item)
 --- config
     location /foo {
         array_split ',' $arg_names to=$names;
@@ -86,7 +142,7 @@ nomas
 
 
 
-=== TEST 6: array split/join (empty array)
+=== TEST 10: array split/join (empty array)
 --- config
     location /foo {
         array_split ',' $arg_names to=$names;
@@ -100,7 +156,7 @@ GET /foo?
 
 
 
-=== TEST 7: array split/join (multi-char sep)
+=== TEST 11: array split/join (multi-char sep)
 --- config
     location /foo {
         array_split '->' $arg_names to=$names;
@@ -114,7 +170,7 @@ a(+)b(+)c
 
 
 
-=== TEST 8: array split/join (list of empty values)
+=== TEST 12: array split/join (list of empty values)
 --- config
     location /foo {
         array_split ',' $arg_names to=$names;
@@ -128,7 +184,7 @@ GET /foo?names=,,,
 
 
 
-=== TEST 9: array map
+=== TEST 13: array map
 --- config
     location /foo {
         array_split ',' $arg_names to=$names;
@@ -143,7 +199,7 @@ GET /foo?names=,,,
 
 
 
-=== TEST 10: array map (in-place)
+=== TEST 14: array map (in-place)
 --- config
     location /foo {
         array_split ',' $arg_names to=$names;
@@ -158,7 +214,7 @@ GET /foo?names=bob,marry,nomas
 
 
 
-=== TEST 11: array map (copy)
+=== TEST 15: array map (copy)
 --- config
     location /foo {
         array_split ',' $arg_names to=$names;
@@ -176,7 +232,7 @@ bob+marry+nomas
 
 
 
-=== TEST 12: array map (empty values)
+=== TEST 16: array map (empty values)
 --- config
     location /foo {
         array_split ',' $arg_names to=$names;
@@ -191,7 +247,7 @@ GET /foo?names=,marry,nomas
 
 
 
-=== TEST 13: non-in-place join
+=== TEST 17: non-in-place join
 --- config
     location /foo {
         array_split ',' $arg_names to=$names;
@@ -208,7 +264,7 @@ bob-marry-nomas
 
 
 
-=== TEST 14: non-in-place join
+=== TEST 18: non-in-place join
 --- config
     location /foo {
         array_split ',' $arg_names to=$names;
@@ -225,7 +281,7 @@ bob-marry-nomas
 
 
 
-=== TEST 15: map op (in-place)
+=== TEST 19: map op (in-place)
 --- config
     location /foo {
         array_split ',' $arg_names to=$names;
@@ -240,7 +296,7 @@ GET /foo?names=bob,marry,nomas
 
 
 
-=== TEST 16: map op (copy)
+=== TEST 20: map op (copy)
 --- config
     location /foo {
         array_split ',' $arg_names to=$names;
@@ -255,7 +311,7 @@ GET /foo?names=bob,marry,nomas
 
 
 
-=== TEST 17: map op (quote special chars)
+=== TEST 21: map op (quote special chars)
 --- config
     location /foo {
         array_split ',' $arg_names to=$names;
@@ -270,7 +326,7 @@ GET /foo?names=',\
 
 
 
-=== TEST 18: $array_it gets cleared after array map
+=== TEST 22: $array_it gets cleared after array map
 --- config
     location /foo {
         array_split ',' $arg_names to=$names;
