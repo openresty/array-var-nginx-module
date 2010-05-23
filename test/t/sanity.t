@@ -30,7 +30,49 @@ Bob+Marry+John
 
 
 
-=== TEST 2: array split/join (single item)
+=== TEST 2: array split (empty split sep)
+--- config
+    location /foo {
+        array_split '' $arg_names to=$names;
+        array_join '+' $names;
+        echo $names;
+    }
+--- request
+GET /foo?names=Bob
+--- response_body
+B+o+b
+
+
+
+=== TEST 3: array split (empty split/join sep)
+--- config
+    location /foo {
+        array_split '' $arg_names to=$names;
+        array_join '' $names;
+        echo [$names];
+    }
+--- request
+GET /foo?names=Bob
+--- response_body
+[Bob]
+
+
+
+=== TEST 4: array split (empty split + empty input)
+--- config
+    location /foo {
+        array_split '' $arg_names to=$names;
+        array_join '+' $names;
+        echo [$names];
+    }
+--- request
+GET /foo?
+--- response_body
+[]
+
+
+
+=== TEST 5: array split/join (single item)
 --- config
     location /foo {
         array_split ',' $arg_names to=$names;
@@ -44,7 +86,7 @@ nomas
 
 
 
-=== TEST 3: array split/join (empty array)
+=== TEST 6: array split/join (empty array)
 --- config
     location /foo {
         array_split ',' $arg_names to=$names;
@@ -58,7 +100,21 @@ GET /foo?
 
 
 
-=== TEST 4: array split/join (list of empty values)
+=== TEST 7: array split/join (multi-char sep)
+--- config
+    location /foo {
+        array_split '->' $arg_names to=$names;
+        array_join '(+)' $names;
+        echo "$names";
+    }
+--- request
+GET /foo?names=a->b->c
+--- response_body
+a(+)b(+)c
+
+
+
+=== TEST 8: array split/join (list of empty values)
 --- config
     location /foo {
         array_split ',' $arg_names to=$names;
@@ -72,7 +128,7 @@ GET /foo?names=,,,
 
 
 
-=== TEST 5: array map
+=== TEST 9: array map
 --- config
     location /foo {
         array_split ',' $arg_names to=$names;
@@ -87,7 +143,7 @@ GET /foo?names=,,,
 
 
 
-=== TEST 6: array map (in-place)
+=== TEST 10: array map (in-place)
 --- config
     location /foo {
         array_split ',' $arg_names to=$names;
@@ -102,7 +158,7 @@ GET /foo?names=bob,marry,nomas
 
 
 
-=== TEST 7: array map (copy)
+=== TEST 11: array map (copy)
 --- config
     location /foo {
         array_split ',' $arg_names to=$names;
@@ -120,7 +176,7 @@ bob+marry+nomas
 
 
 
-=== TEST 8: array map (empty values)
+=== TEST 12: array map (empty values)
 --- config
     location /foo {
         array_split ',' $arg_names to=$names;
@@ -135,7 +191,7 @@ GET /foo?names=,marry,nomas
 
 
 
-=== TEST 9: non-in-place join
+=== TEST 13: non-in-place join
 --- config
     location /foo {
         array_split ',' $arg_names to=$names;
@@ -152,7 +208,7 @@ bob-marry-nomas
 
 
 
-=== TEST 10: non-in-place join
+=== TEST 14: non-in-place join
 --- config
     location /foo {
         array_split ',' $arg_names to=$names;
@@ -169,7 +225,7 @@ bob-marry-nomas
 
 
 
-=== TEST 11: map op
+=== TEST 15: map op (in-place)
 --- config
     location /foo {
         array_split ',' $arg_names to=$names;
@@ -184,7 +240,22 @@ GET /foo?names=bob,marry,nomas
 
 
 
-=== TEST 12: map op
+=== TEST 16: map op (copy)
+--- config
+    location /foo {
+        array_split ',' $arg_names to=$names;
+        array_map_op set_quote_sql_str $names to=$list;
+        array_join '+' $list to=$res;
+        echo $res;
+    }
+--- request
+GET /foo?names=bob,marry,nomas
+--- response_body
+'bob'+'marry'+'nomas'
+
+
+
+=== TEST 17: map op (quote special chars)
 --- config
     location /foo {
         array_split ',' $arg_names to=$names;
@@ -196,4 +267,18 @@ GET /foo?names=bob,marry,nomas
 GET /foo?names=',\
 --- response_body
 '\''+'\\'
+
+
+
+=== TEST 18: $array_it gets cleared after array map
+--- config
+    location /foo {
+        array_split ',' $arg_names to=$names;
+        array_map '[$array_it]' $names;
+        echo "[$array_it]";
+    }
+--- request
+GET /foo?names=bob,marry,nomas
+--- response_body
+[]
 
