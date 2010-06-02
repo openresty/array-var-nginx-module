@@ -645,6 +645,8 @@ ngx_http_array_var_map_op(ngx_http_request_t *r,
     for (i = 0; i < array->nelts; i++) {
         arg.data = value[i].data;
         arg.len = value[i].len;
+        arg.valid = 1;
+        arg.not_found = 0;
 
         if (conf->in_place) {
             new_value = &value[i];
