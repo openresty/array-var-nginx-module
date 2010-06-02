@@ -243,6 +243,8 @@ ngx_http_array_map(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         ngx_memzero(data->template, sizeof(ngx_http_complex_value_t));
 
     } else {
+        ngx_memzero(&ccv, sizeof(ngx_http_compile_complex_value_t));
+
         ccv.cf = cf;
         ccv.value = &value[1];
         ccv.complex_value = data->template;

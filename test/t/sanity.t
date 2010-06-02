@@ -9,6 +9,7 @@ repeat_each(1);
 plan tests => repeat_each() * 2 * blocks();
 
 no_long_string();
+#no_shuffle();
 
 run_tests();
 
