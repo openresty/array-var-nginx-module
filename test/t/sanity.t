@@ -1,4 +1,4 @@
-# vi:filetype=perl
+# vi:filetype=
 
 use lib 'lib';
 use Test::Nginx::Socket;
@@ -338,4 +338,34 @@ GET /foo?names=',\
 GET /foo?names=bob,marry,nomas
 --- response_body
 []
+
+
+
+=== TEST 23: map op (copy) on set_quote_pgsql_str
+--- config
+    location /foo {
+        array_split ',' $arg_names to=$names;
+        array_map_op set_quote_pgsql_str $names to=$list;
+        array_join '+' $list to=$res;
+        echo $res;
+    }
+--- request
+GET /foo?names=bob,marry,nomas
+--- response_body
+E'bob'+E'marry'+E'nomas'
+
+
+
+=== TEST 24: map op (copy) on set_quote_json_str
+--- config
+    location /foo {
+        array_split ',' $arg_names to=$names;
+        array_map_op set_quote_json_str $names to=$list;
+        array_join '+' $list to=$res;
+        echo $res;
+    }
+--- request
+GET /foo?names=bob,marry,nomas
+--- response_body
+"bob"+"marry"+"nomas"
 
