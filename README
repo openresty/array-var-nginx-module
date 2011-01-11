@@ -41,7 +41,7 @@ Installation
         example, the version 0.8.41 (see nginx compatibility),
 
     2. Grab the NDK module from GitHub:
-        http://github.com/simpl-it/ngx_devel_kit
+        http://github.com/simpl/ngx_devel_kit
 
     3. and then build the source with this module:
 
@@ -165,5 +165,5 @@ Copyright & License
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 See Also
-    NDK: http://github.com/simpl-it/ngx_devel_kit
+    NDK: http://github.com/simpl/ngx_devel_kit
 
