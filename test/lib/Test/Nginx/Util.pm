@@ -3,7 +3,7 @@ package Test::Nginx::Util;
 use strict;
 use warnings;
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 use base 'Exporter';
 
@@ -29,6 +29,10 @@ our $UseValgrind = $ENV{TEST_NGINX_USE_VALGRIND};
 
 sub no_shuffle () {
     $NoShuffle = 1;
+}
+
+sub no_nginx_manager () {
+    $NoNginxManager = 1;
 }
 
 our $ForkManager;
@@ -140,6 +144,7 @@ our @EXPORT_OK = qw(
     html_dir
     server_root
     server_port
+    no_nginx_manager
 );
 
 
@@ -162,7 +167,7 @@ our $TODO;
 
 #our ($PrevRequest, $PrevConfig);
 
-our $ServRoot   = $ENV{TEST_NGINX_SERVROOT} || File::Spec->catfile(cwd(), 't/servroot');
+our $ServRoot   = $ENV{TEST_NGINX_SERVROOT} || File::Spec->catfile(cwd() || '.', 't/servroot');
 our $LogDir     = File::Spec->catfile($ServRoot, 'logs');
 our $ErrLogFile = File::Spec->catfile($LogDir, 'error.log');
 our $AccLogFile = File::Spec->catfile($LogDir, 'access.log');
@@ -423,7 +428,7 @@ sub expand_env_in_config ($) {
         return;
     }
 
-    $config =~ s/\$(TEST_NGINX_[_A-Z]+)/
+    $config =~ s/\$(TEST_NGINX_[_A-Z0-9]+)/
         if (!defined $ENV{$1}) {
             bail_out "No environment $1 defined.\n";
         }
@@ -439,10 +444,7 @@ sub check_if_missing_directives () {
     while (<$in>) {
         #warn $_;
         if (/\[emerg\] \S+?: unknown directive "([^"]+)"/) {
-            return $1;
-        }
-        if (/\[error\] .*? [dD]irective "(\S+)" not found/) {
-            warn "MATCHED!!! $1";
+            #warn "MATCHED!!! $1";
             return $1;
         }
     }
@@ -619,6 +621,7 @@ start_nginx:
             setup_server_root();
             write_user_files($block);
             write_config_file($config, $block->http_config, $block->main_config);
+            #warn "nginx binary: $NginxBinary";
             if ( ! can_run($NginxBinary) ) {
                 bail_out("$name - Cannot find the nginx executable in the PATH environment");
                 die;
@@ -793,12 +796,13 @@ END {
 sub can_run {
 	my ($cmd) = @_;
 
+        #warn "can run: @_\n";
 	my $_cmd = $cmd;
 	return $_cmd if (-x $_cmd or $_cmd = MM->maybe_command($_cmd));
 
 	for my $dir ((split /$Config::Config{path_sep}/, $ENV{PATH}), '.') {
 		next if $dir eq '';
-		my $abs = File::Spec->catfile($dir, $_[1]);
+		my $abs = File::Spec->catfile($dir, $_[0]);
 		return $abs if (-x $abs or $abs = MM->maybe_command($abs));
 	}
 
