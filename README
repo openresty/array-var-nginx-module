@@ -38,16 +38,16 @@ Directives
 
 Installation
     1. Grab the nginx source code from nginx.net (<http://nginx.net/>), for
-        example, the version 0.8.41 (see nginx compatibility),
+        example, the version 0.8.54 (see nginx compatibility),
 
     2. Grab the NDK module from GitHub:
         http://github.com/simpl/ngx_devel_kit
 
     3. and then build the source with this module:
 
-        $ wget 'http://sysoev.ru/nginx/nginx-0.8.41.tar.gz'
-        $ tar -xzvf nginx-0.8.41.tar.gz
-        $ cd nginx-0.8.41/
+        $ wget 'http://sysoev.ru/nginx/nginx-0.8.54.tar.gz'
+        $ tar -xzvf nginx-0.8.54.tar.gz
+        $ cd nginx-0.8.54/
 
         # Here we assume you would install you nginx under /opt/nginx/.
         $ ./configure --prefix=/opt/nginx \
@@ -64,9 +64,11 @@ Installation
 Compatibility
     The following versions of Nginx should work with this module:
 
-    *   0.8.x (last tested version is 0.8.49)
+    *   0.9.x (last tested: 0.9.4)
 
-    *   0.7.x >= 0.7.44 (last tested version is 0.7.67)
+    *   0.8.x (last tested: 0.8.54)
+
+    *   0.7.x >= 0.7.44 (last tested: 0.7.68)
 
     Earlier versions of Nginx like 0.6.x and 0.5.x will *not* work.
 
