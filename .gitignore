@@ -11,7 +11,7 @@ print.txt
 .rsync
 *.tar.gz
 dist
-build[78]
+build[789]
 build
 tags
 update-readme
@@ -21,7 +21,7 @@ test/blib
 test.sh
 t.sh
 t/t.sh
-test/t/servroot/
+t/servroot/
 releng
 reset
 *.t_
@@ -32,3 +32,4 @@ ctags
 src/module.c
 src/util.c
 src/util.h
+all.sh

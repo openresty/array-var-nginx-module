@@ -7,7 +7,10 @@ rm ~/work/nginx-0.8.41/objs/addon/ndk/ndk.o ~/work/nginx-0.8.41/objs/addon/ndk-n
 root=`pwd`
 home=~
 
-cd ~/work
+if [ !-d ~/work ]; then
+    mkdir ~/work
+fi
+cd ~/work || exit 1
 version=$1
 opts=$2
 
@@ -39,11 +42,21 @@ fi
 cd nginx-$version/
 if [[ "$BUILD_CLEAN" -eq 1 || ! -f Makefile || "$root/config" -nt Makefile || "$root/util/build.sh" -nt Makefile ]]; then
     ./configure --prefix=/opt/nginx \
+            --without-mail_pop3_module \
+            --without-mail_imap_module \
+            --without-mail_smtp_module \
+            --without-http_upstream_ip_hash_module \
+            --without-http_empty_gif_module \
+            --without-http_memcached_module \
+            --without-http_referer_module \
+            --without-http_autoindex_module \
+            --without-http_auth_basic_module \
+            --without-http_userid_module \
           --add-module=$root/../echo-nginx-module \
           --add-module=$root/../ndk-nginx-module \
           --add-module=$root/../set-misc-nginx-module \
           --add-module=$root $opts \
-          --with-debug
+          --with-debug || exit 1
           #--add-module=$home/work/ndk \
   #--without-http_ssi_module  # we cannot disable ssi because echo_location_async depends on it (i dunno why?!)
 
