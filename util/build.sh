@@ -35,7 +35,7 @@ fi
 
 cd nginx-$version/
 if [[ "$BUILD_CLEAN" -eq 1 || ! -f Makefile || "$root/config" -nt Makefile || "$root/util/build.sh" -nt Makefile ]]; then
-    ./configure --prefix=/opt/nginx \
+    ./configure --prefix=$target \
             --without-mail_pop3_module \
             --without-mail_imap_module \
             --without-mail_smtp_module \
