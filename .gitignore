@@ -33,3 +33,4 @@ src/module.c
 src/util.c
 src/util.h
 all.sh
+buildroot/
