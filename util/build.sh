@@ -2,37 +2,31 @@
 
 # this file is mostly meant to be used by the author himself.
 
-rm ~/work/nginx-0.8.41/objs/addon/ndk/ndk.o ~/work/nginx-0.8.41/objs/addon/ndk-nginx-module/ndk.o
-
 root=`pwd`
 home=~
-
-if [ !-d ~/work ]; then
-    mkdir ~/work
-fi
-cd ~/work || exit 1
 version=$1
 opts=$2
 
+target=$root/work/nginx
+
+rm -f ~/work/nginx-$version/objs/addon/src/ndk.o
+rm -f ~/work/nginx-$version/objs/addon/ndk/ndk.o \
+    ~/work/nginx-$version/objs/addon/ndk-nginx-module/ndk.o
+
+if [ ! -d ./buildroot ]; then
+    mkdir ./buildroot || exit 1
+fi
+
+cd buildroot || exit 1
+
 if [ ! -s "nginx-$version.tar.gz" ]; then
-    wget "http://sysoev.ru/nginx/nginx-$version.tar.gz" -O nginx-$version.tar.gz
-    if [ "$?" != 0 ]; then
-        echo Abort.
-        exit 1;
+    if [ -f ~/work/nginx-$version.tar.gz ]; then
+        cp ~/work/nginx-$version.tar.gz ./ || exit 1
+    else
+        wget "http://sysoev.ru/nginx/nginx-$version.tar.gz" -O nginx-$version.tar.gz || exit 1
     fi
-    tar -xzvf nginx-$version.tar.gz
-    if [ "$?" != 0 ]; then
-        echo Abort.
-        exit 1;
-    fi
-    if [ "$version" = "0.8.41" ]; then
-        cp $root/../no-pool-nginx/nginx-0.8.41-no_pool.patch ./
-        patch -p0 < nginx-0.8.41-no_pool.patch
-        if [ "$?" != 0 ]; then
-            echo Abort.
-            exit 1
-        fi
-    fi
+
+    tar -xzvf nginx-$version.tar.gz || exit 1
 fi
 
 #tar -xzvf nginx-$version.tar.gz || exit 1
@@ -61,11 +55,11 @@ if [[ "$BUILD_CLEAN" -eq 1 || ! -f Makefile || "$root/config" -nt Makefile || "$
   #--without-http_ssi_module  # we cannot disable ssi because echo_location_async depends on it (i dunno why?!)
 
 fi
-if [ -f /opt/nginx/sbin/nginx ]; then
-    rm -f /opt/nginx/sbin/nginx
+if [ -f $target/sbin/nginx ]; then
+    rm -f $target/sbin/nginx
 fi
-if [ -f /opt/nginx/logs/nginx.pid ]; then
-    kill `cat /opt/nginx/logs/nginx.pid`
+if [ -f $target/logs/nginx.pid ]; then
+    kill `cat $target/logs/nginx.pid`
 fi
 make -j3
 make install
