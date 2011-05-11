@@ -32,5 +32,7 @@ ctags
 src/module.c
 src/util.c
 src/util.h
-all.sh
+all
+go
+build10
 buildroot/
