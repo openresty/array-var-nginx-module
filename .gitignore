@@ -34,5 +34,6 @@ src/util.c
 src/util.h
 all
 go
-build10
+build1[01]
 buildroot/
+work/
