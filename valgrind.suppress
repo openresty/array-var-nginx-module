@@ -1,4 +1,10 @@
 {
+<insert_a_suppression_name_here>
+Memcheck:Param
+epoll_ctl(event)
+fun:epoll_ctl
+}
+{
    nginx-core-process-init
    Memcheck:Leak
    fun:malloc
