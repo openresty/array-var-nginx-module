@@ -165,7 +165,7 @@ ngx_http_array_split(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
         target.data = value[3].data + sizeof("to=") - 1;
         target.len = value[3].len - (sizeof("to=") - 1);
-        dd("split target: %.*s", target.len, target.data);
+        dd("split target: %.*s", (int) target.len, target.data);
 
         if (cf->args->nelts > 3 + 1) {
             bad_arg = &value[4];
@@ -327,7 +327,7 @@ ngx_http_array_map_op(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
         target = value[2];
 
-        dd("array join target: %.*s", target.len, target.data);
+        dd("array join target: %.*s", (int) target.len, target.data);
 
         return ndk_set_var_multi_value_core(cf, &target, &value[1], &filter);
     }
@@ -383,7 +383,7 @@ ngx_http_array_join(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         filter.size = 2;
         target = value[2];
 
-        dd("array join target: %.*s", target.len, target.data);
+        dd("array join target: %.*s", (int) target.len, target.data);
 
         return ndk_set_var_multi_value_core(cf, &target, &value[1], &filter);
     }
@@ -425,7 +425,7 @@ ngx_http_array_var_split(ngx_http_request_t *r, ngx_str_t *res,
     ngx_http_array_split_data_t             *conf = data;
     ngx_http_variable_value_t               *sep, *str;
     ngx_str_t                               *s;
-    u_char                                  *pos, *end, *last;
+    u_char                                  *pos, *end, *last = NULL;
     ssize_t                                  max, i, len = 4;
     ngx_array_t                             *array;
 
@@ -493,7 +493,7 @@ ngx_http_array_var_split(ngx_http_request_t *r, ngx_str_t *res,
         s->data = pos;
         s->len = last - pos;
 
-        dd("split item %.*s", s->len, s->data);
+        dd("split item %.*s", (int) s->len, s->data);
 
         pos = last + sep->len;
         i++;
@@ -510,9 +510,9 @@ done:
     s->data = pos;
     s->len = end - pos;
 
-    dd("split item %.*s", s->len, s->data);
+    dd("split item %.*s", (int) s->len, s->data);
 
-    dd("split: array size: %d", array->nelts);
+    dd("split: array size: %d", (int) array->nelts);
     dd("split array ptr: %p", array);
 
     res->data = (u_char *) array;
@@ -565,7 +565,7 @@ ngx_http_array_var_map(ngx_http_request_t *r, ngx_str_t *res,
         }
     }
 
-    dd("array var map: array size: %d", array->nelts);
+    dd("array var map: array size: %d", (int) array->nelts);
 
     array_it->not_found = 0;
     array_it->valid = 1;
@@ -590,7 +590,8 @@ ngx_http_array_var_map(ngx_http_request_t *r, ngx_str_t *res,
             return NGX_ERROR;
         }
 
-        dd("array var map: new item: %.*s", new_value->len, new_value->data);
+        dd("array var map: new item: %.*s", (int) new_value->len,
+           new_value->data);
     }
 
     array_it->not_found = 1;
@@ -706,7 +707,7 @@ ngx_http_array_var_join(ngx_http_request_t *r,
     array = (ngx_array_t *) v[1].data;
 
     dd("join array ptr %p", array);
-    dd("array->nelts: %d", array->nelts);
+    dd("array->nelts: %d", (int) array->nelts);
 
     if (array->nelts == 0) {
         res->data = NULL;
@@ -722,7 +723,7 @@ ngx_http_array_var_join(ngx_http_request_t *r,
         len += value[i].len;
     }
 
-    dd("buf len %d", len);
+    dd("buf len %d", (int) len);
 
     res->data = ngx_palloc(r->pool, len);
     if (res->data == NULL) {
@@ -734,7 +735,7 @@ ngx_http_array_var_join(ngx_http_request_t *r,
     p = res->data;
 
     for (i = 0; i < array->nelts; i++) {
-        dd("copying elem of size %d", value[i].len);
+        dd("copying elem of size %d", (int) value[i].len);
         p = ngx_copy(p, value[i].data, value[i].len);
         if (i < array->nelts - 1) {
             p = ngx_copy(p, sep->data, sep->len);
