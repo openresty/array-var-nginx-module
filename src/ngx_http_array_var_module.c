@@ -76,7 +76,7 @@ static ngx_command_t  ngx_http_array_var_commands[] = {
         ngx_http_array_map_op,
         0,
         0,
-        ngx_http_array_var_map_op
+        (void *) ngx_http_array_var_map_op
     },
     {
         ngx_string("array_join"),
@@ -85,7 +85,7 @@ static ngx_command_t  ngx_http_array_var_commands[] = {
         ngx_http_array_join,
         0,
         0,
-        ngx_http_array_var_join
+        (void *) ngx_http_array_var_join
     },
 
     ngx_null_command
@@ -138,7 +138,7 @@ ngx_http_array_split(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     }
 
     filter.type = NDK_SET_VAR_MULTI_VALUE_DATA;
-    filter.func = ngx_http_array_var_split;
+    filter.func = (void *) ngx_http_array_var_split;
     filter.data = data;
 
     value = cf->args->elts;
@@ -255,7 +255,7 @@ ngx_http_array_map(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     }
 
     filter.type = NDK_SET_VAR_VALUE_DATA;
-    filter.func = ngx_http_array_var_map;
+    filter.func = (void *) ngx_http_array_var_map;
     filter.data = data;
     filter.size = 1;
 
@@ -309,7 +309,7 @@ ngx_http_array_map_op(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     }
 
     filter.type = NDK_SET_VAR_MULTI_VALUE_DATA;
-    filter.func = (ndk_set_var_value_pt) cmd->post;
+    filter.func = cmd->post;
     filter.data = data;
 
     value = cf->args->elts;
@@ -368,7 +368,7 @@ ngx_http_array_join(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     ngx_str_t                       *bad_arg;
 
     filter.type = NDK_SET_VAR_MULTI_VALUE;
-    filter.func = (ndk_set_var_value_pt) cmd->post;
+    filter.func = cmd->post;
 
     value = cf->args->elts;
 
@@ -476,9 +476,13 @@ ngx_http_array_var_split(ngx_http_request_t *r,
         goto done;
     }
 
-    while (i != max - 1 && (last = ngx_http_array_var_strlstrn(pos, end,
-                    sep->data, sep->len - 1)))
-    {
+    while (i != max - 1) {
+        last = ngx_http_array_var_strlstrn(pos, end, sep->data,
+                                           sep->len - 1);
+        if (last == NULL) {
+            break;
+        }
+
         s = ngx_array_push(array);
         if (s == NULL) {
             return NGX_ERROR;

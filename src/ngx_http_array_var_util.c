@@ -70,7 +70,7 @@ ngx_http_array_var_get_func_from_cmd(u_char *name,
                 continue;
             }
 
-            return filter->func;
+            return (ndk_set_var_value_pt) filter->func;
         }
     }
 
