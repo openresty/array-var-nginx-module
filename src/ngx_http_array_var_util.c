@@ -1,11 +1,20 @@
+
+/*
+ * Copyright (C) Yichun Zhang (agentzh)
+ */
+
+
+#ifndef DDEBUG
 #define DDEBUG 0
+#endif
 #include "ddebug.h"
+
 
 #include "ngx_http_array_var_util.h"
 
 
 static ngx_int_t ngx_http_array_var_variable_not_found(ngx_http_request_t *r,
-        ngx_http_variable_value_t *v, uintptr_t data);
+    ngx_http_variable_value_t *v, uintptr_t data);
 
 
 /* Modified from the ngx_strlcasestrn function in ngx_string.h
@@ -35,8 +44,7 @@ ngx_http_array_var_strlstrn(u_char *s1, u_char *last, u_char *s2, size_t n)
 
 
 ndk_set_var_value_pt
-ngx_http_array_var_get_func_from_cmd(u_char *name,
-        size_t name_len)
+ngx_http_array_var_get_func_from_cmd(u_char *name, size_t name_len)
 {
     ndk_set_var_t           *filter;
     ngx_uint_t               i;
@@ -65,7 +73,7 @@ ngx_http_array_var_get_func_from_cmd(u_char *name,
             }
 
             if (cmd->name.len != name_len
-                    || ngx_strncmp(cmd->name.data, name, name_len) != 0)
+                || ngx_strncmp(cmd->name.data, name, name_len) != 0)
             {
                 continue;
             }
@@ -79,7 +87,8 @@ ngx_http_array_var_get_func_from_cmd(u_char *name,
 
 
 ngx_int_t
-ngx_http_array_var_add_variable(ngx_conf_t *cf, ngx_str_t *name) {
+ngx_http_array_var_add_variable(ngx_conf_t *cf, ngx_str_t *name)
+{
     ngx_http_variable_t         *v;
 
     v = ngx_http_add_variable(cf, name, NGX_HTTP_VAR_CHANGEABLE);
@@ -95,9 +104,8 @@ ngx_http_array_var_add_variable(ngx_conf_t *cf, ngx_str_t *name) {
 
 static ngx_int_t
 ngx_http_array_var_variable_not_found(ngx_http_request_t *r,
-        ngx_http_variable_value_t *v, uintptr_t data)
+    ngx_http_variable_value_t *v, uintptr_t data)
 {
     v->not_found = 1;
     return NGX_OK;
 }
-
