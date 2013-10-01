@@ -34,6 +34,9 @@ src/util.c
 src/util.h
 all
 go
-build1[01]
+build1[0-9]
 buildroot/
 work/
+Makefile
+nginx
+*.plist
