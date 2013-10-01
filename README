@@ -37,17 +37,23 @@ Directives
     array_join
 
 Installation
+    If you are using the ngx_openresty bundle, then this module is bundled
+    and enabled by default.
+
+    If you prefer installing this module with your own Nginx source
+    code tarball, then follow the following steps:
+
     1. Grab the nginx source code from nginx.net (<http://nginx.net/>), for
-        example, the version 1.0.8 (see nginx compatibility),
+        example, the version 1.4.2 (see nginx compatibility),
 
     2. Grab the NDK module from GitHub:
         http://github.com/simpl/ngx_devel_kit
 
     3. and then build the source with this module:
 
-        wget 'http://sysoev.ru/nginx/nginx-1.0.8.tar.gz'
-        tar -xzvf nginx-1.0.8.tar.gz
-        cd nginx-1.0.8/
+        wget 'http://sysoev.ru/nginx/nginx-1.4.2.tar.gz'
+        tar -xzvf nginx-1.4.2.tar.gz
+        cd nginx-1.4.2/
 
         # Here we assume you would install you nginx under /opt/nginx/.
         ./configure --prefix=/opt/nginx \
@@ -63,6 +69,10 @@ Installation
 
 Compatibility
     The following versions of Nginx should work with this module:
+
+    *   1.4.x (last tested: 1.4.2)
+
+    *   1.2.x (last tested: 1.2.9)
 
     *   1.1.x (last tested: 1.1.5)
 
@@ -133,13 +143,10 @@ Getting involved
     a commit bit to the source repository on GitHub.
 
 Author
-    agentzh (章亦春) *<agentzh@gmail.com>*
+    Yichun "agentzh" Zhang (章亦春) *<agentzh@gmail.com>*, CloudFlare Inc.
 
 Copyright & License
-    Copyright (c) 2010, Taobao Inc., Alibaba Group ( http://www.taobao.com
-    ).
-
-    Copyright (c) 2009, agentzh <agentzh@gmail.com>.
+    Copyright (c) 2009-2013, Yichun Zhang (agentzh) <agentzh@gmail.com>, CloudFlare Inc.
 
     This module is licensed under the terms of the BSD license.
 
