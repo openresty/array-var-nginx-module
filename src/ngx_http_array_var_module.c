@@ -34,13 +34,13 @@ typedef struct {
 } ngx_http_array_map_op_data_t;
 
 
-static char * ngx_http_array_split(ngx_conf_t *cf, ngx_command_t *cmd,
+static char *ngx_http_array_split(ngx_conf_t *cf, ngx_command_t *cmd,
     void *conf);
-static char * ngx_http_array_map(ngx_conf_t *cf, ngx_command_t *cmd,
+static char *ngx_http_array_map(ngx_conf_t *cf, ngx_command_t *cmd,
     void *conf);
-static char * ngx_http_array_map_op(ngx_conf_t *cf, ngx_command_t *cmd,
+static char *ngx_http_array_map_op(ngx_conf_t *cf, ngx_command_t *cmd,
     void *conf);
-static char * ngx_http_array_join(ngx_conf_t *cf, ngx_command_t *cmd,
+static char *ngx_http_array_join(ngx_conf_t *cf, ngx_command_t *cmd,
     void *conf);
 static ngx_int_t ngx_http_array_var_split(ngx_http_request_t *r,
     ngx_str_t *res, ngx_http_variable_value_t *v, void *data);
@@ -500,6 +500,7 @@ ngx_http_array_var_split(ngx_http_request_t *r, ngx_str_t *res,
     }
 
 done:
+
     dd("pos %p, last %p, end %p", pos, last, end);
 
     s = ngx_array_push(array);
@@ -554,7 +555,7 @@ ngx_http_array_var_map(ngx_http_request_t *r, ngx_str_t *res,
 
     array_it = ngx_http_get_indexed_variable(r, conf->array_it_index);
 
-    if ( conf->in_place) {
+    if (conf->in_place) {
         new_array = array;
 
     } else {
@@ -641,7 +642,7 @@ ngx_http_array_var_map_op(ngx_http_request_t *r,
 
     value = array->elts;
 
-    if ( conf->in_place) {
+    if (conf->in_place) {
         new_array = array;
 
     } else {
