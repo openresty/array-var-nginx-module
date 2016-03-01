@@ -48,16 +48,23 @@ ngx_http_array_var_get_func_from_cmd(u_char *name, size_t name_len)
 {
     ndk_set_var_t           *filter;
     ngx_uint_t               i;
+    ngx_module_t           **modules;
     ngx_module_t            *module;
     ngx_command_t           *cmd;
 
-    for (i = 0; ngx_modules[i]; i++) {
-        module = ngx_modules[i];
+#if defined(nginx_version) && nginx_version >= 1009011
+    modules = ngx_cycle->modules;
+#else
+    modules = ngx_modules;
+#endif
+
+    for (i = 0; modules[i]; i++) {
+        module = modules[i];
         if (module->type != NGX_HTTP_MODULE) {
             continue;
         }
 
-        cmd = ngx_modules[i]->commands;
+        cmd = modules[i]->commands;
         if (cmd == NULL) {
             continue;
         }
