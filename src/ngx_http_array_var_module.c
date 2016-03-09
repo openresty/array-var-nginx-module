@@ -158,7 +158,7 @@ ngx_http_array_split(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     /* cf->args->nelts >= 3 + 1 */
 
     if (value[3].len >= sizeof("to=") - 1
-            && ngx_str3cmp(value[3].data, 't', 'o', '='))
+        && ngx_str3cmp(value[3].data, 't', 'o', '='))
     {
         dd("array_split $sep $str to=$array");
         data->nargs = filter.size = 2;
@@ -186,10 +186,10 @@ ngx_http_array_split(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         /* array_split $sep $str $max to=$array */
 
         if (value[4].len < sizeof("to=") - 1
-                || ! (ngx_str3cmp(value[4].data, 't', 'o', '=')))
+            || ! (ngx_str3cmp(value[4].data, 't', 'o', '=')))
         {
             ngx_conf_log_error(NGX_LOG_ERR, cf, 0,
-                    "%V: expecting the \"to\" option at the "
+                               "%V: expecting the \"to\" option at the "
                     "4th argument: \"%V\"",
                     &cmd->name, &value[4]);
 
@@ -215,9 +215,8 @@ ngx_http_array_split(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
 unexpected_arg:
 
-    ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
-            "%V: unexpected argument \"%V\"",
-            &cmd->name, bad_arg);
+    ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "%V: unexpected argument \"%V\"",
+                       &cmd->name, bad_arg);
 
     return NGX_CONF_ERROR;
 }
@@ -280,12 +279,12 @@ ngx_http_array_map(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         /* cf->args->nelts == 3 + 1 */
 
         if (value[3].len < sizeof("to=") - 1
-                || ! (ngx_str3cmp(value[3].data, 't', 'o', '=')))
+            || ! (ngx_str3cmp(value[3].data, 't', 'o', '=')))
         {
             ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
-                    "%V: expecting the \"to\" option at "
-                    "the 3rd argument: \"%V\"",
-                    &cmd->name, &value[3]);
+                               "%V: expecting the \"to\" option at "
+                               "the 3rd argument: \"%V\"",
+                               &cmd->name, &value[3]);
 
             return NGX_CONF_ERROR;
         }
@@ -335,7 +334,7 @@ ngx_http_array_map_op(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     /* cf->args->nelts == 3 + 1 */
 
     if (value[3].len >= sizeof("to=") - 1
-            && ngx_str3cmp(value[3].data, 't', 'o', '='))
+        && ngx_str3cmp(value[3].data, 't', 'o', '='))
     {
         /* array_join $sep $str to=$array */
         filter.size = 2;
@@ -349,7 +348,7 @@ ngx_http_array_map_op(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
         } else {
             return ndk_set_var_multi_value_core(cf, &target, &value[1],
-                    &filter);
+                                                &filter);
         }
 
     } else {
@@ -357,8 +356,8 @@ ngx_http_array_map_op(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     }
 
     ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
-            "%V: unexpected argument \"%V\"",
-            &cmd->name, bad_arg);
+                       "%V: unexpected argument \"%V\"",
+                       &cmd->name, bad_arg);
 
     return NGX_CONF_ERROR;
 }
@@ -391,7 +390,7 @@ ngx_http_array_join(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     /* cf->args->nelts == 3 + 1 */
 
     if (value[3].len >= sizeof("to=") - 1
-            && ngx_str3cmp(value[3].data, 't', 'o', '='))
+        && ngx_str3cmp(value[3].data, 't', 'o', '='))
     {
         /* array_join $sep $str to=$array */
         filter.size = 2;
@@ -403,7 +402,7 @@ ngx_http_array_join(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
             bad_arg = &value[4];
         } else {
             return ndk_set_var_multi_value_core(cf, &target, &value[1],
-                    &filter);
+                                                &filter);
         }
 
     } else {
@@ -411,8 +410,8 @@ ngx_http_array_join(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     }
 
     ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
-            "%V: unexpected argument \"%V\"",
-            &cmd->name, bad_arg);
+                       "%V: unexpected argument \"%V\"",
+                       &cmd->name, bad_arg);
 
     return NGX_CONF_ERROR;
 }
