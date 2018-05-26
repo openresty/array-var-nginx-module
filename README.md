@@ -263,23 +263,23 @@ You're recommended to install this module (as well as the Nginx core and many ot
 Alternatively, you can install this module manually with the Nginx source:
 
 Grab the nginx source code from [nginx.org](http://nginx.org/), for example,
-the version 1.9.7 (see [nginx compatibility](#compatibility)), and then build the source with this module:
+the version 1.13.6 (see [nginx compatibility](#compatibility)), and then build the source with this module:
 
 ```bash
+wget 'http://nginx.org/download/nginx-1.13.6.tar.gz'
+tar -xzvf nginx-1.13.6.tar.gz
+cd nginx-1.13.6/
 
- $ wget 'http://nginx.org/download/nginx-1.9.7.tar.gz'
- $ tar -xzvf nginx-1.9.7.tar.gz
- $ cd nginx-1.9.7/
+# Here we assume you would install you nginx under /opt/nginx/.
+./configure --prefix=/opt/nginx \
+  --add-module=/path/to/ngx_devel_kit \
+  --add-module=/path/to/array-var-nginx-module
 
- # Here we assume you would install you nginx under /opt/nginx/.
- $ ./configure --prefix=/opt/nginx \
-     --add-module=/path/to/array-var-nginx-module
-
- $ make -j2
- $ make install
+make -j2
+make install
 ```
 
-Download the latest version of the release tarball of this module from [array-var-nginx-module file list](https://github.com/openresty/array-var-nginx-module/tags).
+Download the latest version of the release tarball of this module from [array-var-nginx-module file list](https://github.com/openresty/array-var-nginx-module/tags), and the latest tarball for [ngx_devel_kit](https://github.com/simplresty/ngx_devel_kit) from its [file list](https://github.com/simplresty/ngx_devel_kit/tags).
 
 Also, this module is included and enabled by default in the [OpenResty bundle](http://openresty.org).
 
@@ -304,6 +304,10 @@ Compatibility
 
 The following versions of Nginx should work with this module:
 
+* **1.13.x** (last tested: 1.13.6)
+* **1.12.x**
+* **1.11.x** (last tested: 1.11.2)
+* **1.10.x**
 * **1.9.x** (last tested: 1.9.7)
 * **1.8.x**
 * **1.7.x** (last tested: 1.7.10)
