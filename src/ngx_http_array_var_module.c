@@ -553,6 +553,9 @@ ngx_http_array_var_map(ngx_http_request_t *r, ngx_str_t *res,
     value = array->elts;
 
     array_it = ngx_http_get_indexed_variable(r, conf->array_it_index);
+    if (array_it == NULL) {
+        return NGX_ERROR;
+    }
 
     if (conf->in_place) {
         new_array = array;
