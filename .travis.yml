@@ -1,6 +1,10 @@
 sudo: required
 dist: focal
 
+branches:
+  only:
+    - "master"
+
 os: linux
 
 language: c
@@ -20,8 +24,8 @@ env:
     - NGX_BUILD_JOBS=$JOBS
     - TEST_NGINX_SLEEP=0.006
   matrix:
-    - NGINX_VERSION=1.21.4
     - NGINX_VERSION=1.25.3
+    #- NGINX_VERSION=1.21.4
 
 addons:
   apt:
