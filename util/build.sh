@@ -8,6 +8,9 @@ version=$1
 force=$2
 
 ngx-build $force $version \
+            --with-ld-opt="-L$OPENSSL_LIB -L$PCRE_LIB -Wl,-rpath,$OPENSSL_LIB:$PCRE_LIB:$LIBDRIZZLE_LIB:/usr/local/lib" \
+            --with-cc-opt="-DDEBUG_MALLOC -I $OPENSSL_INC -I $PCRE_INC" \
+            --with-http_ssl_module \
             --without-mail_pop3_module \
             --without-mail_imap_module \
             --without-mail_smtp_module \
@@ -18,11 +21,11 @@ ngx-build $force $version \
             --without-http_autoindex_module \
             --without-http_auth_basic_module \
             --without-http_userid_module \
-          --add-module=$root/../echo-nginx-module \
-          --add-module=$root/../ndk-nginx-module \
-          --add-module=$root/../set-misc-nginx-module \
-          --add-module=$root $opts \
-          --with-debug || exit 1
+            --add-module=$root/../echo-nginx-module \
+            --add-module=$root/../ndk-nginx-module \
+            --add-module=$root/../set-misc-nginx-module \
+            --add-module=$root $opts \
+            --with-debug || exit 1
           #--add-module=$home/work/ndk \
   #--without-http_ssi_module  # we cannot disable ssi because echo_location_async depends on it (i dunno why?!)
 
