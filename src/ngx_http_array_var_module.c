@@ -18,6 +18,12 @@ static ngx_str_t  ngx_http_array_it_key = ngx_string("array_it");
 
 
 typedef struct {
+    ngx_module_t       *tag;
+    ngx_array_t        *array;
+} ngx_http_array_var_ref_t;
+
+
+typedef struct {
     ngx_uint_t          nargs;
 } ngx_http_array_split_data_t;
 
@@ -126,6 +132,55 @@ ngx_module_t  ngx_http_array_var_module = {
     NULL,                                    /* exit master */
     NGX_MODULE_V1_PADDING
 };
+
+
+static ngx_array_t *
+ngx_http_array_var_create(ngx_http_request_t *r, ngx_uint_t n, ngx_str_t *res)
+{
+    ngx_array_t                 *array;
+    ngx_http_array_var_ref_t     *a_ref;
+
+    if (n > NGX_MAX_SIZE_T_VALUE / sizeof(ngx_str_t)) {
+        return NULL;
+    }
+
+    array = ngx_array_create(r->pool, n, sizeof(ngx_str_t));
+    if (array == NULL) {
+        return NULL;
+    }
+
+    a_ref = ngx_palloc(r->pool, sizeof(ngx_http_array_var_ref_t));
+    if (a_ref == NULL) {
+        return NULL;
+    }
+
+    a_ref->tag = &ngx_http_array_var_module;
+    a_ref->array = array;
+    res->data = (u_char *) a_ref;
+    res->len = sizeof(ngx_http_array_var_ref_t);
+
+    return array;
+}
+
+
+static ngx_array_t *
+ngx_http_array_var_get(ngx_http_variable_value_t *v)
+{
+    ngx_http_array_var_ref_t  a_ref;
+
+    if (v->len != sizeof(ngx_http_array_var_ref_t)) {
+        return NULL;
+    }
+
+    /* NDK copies values into buffers that need not be aligned. */
+    ngx_memcpy(&a_ref, v->data, sizeof(ngx_http_array_var_ref_t));
+
+    if (a_ref.tag != &ngx_http_array_var_module) {
+        return NULL;
+    }
+
+    return a_ref.array;
+}
 
 
 static char *
@@ -432,7 +487,7 @@ ngx_http_array_var_split(ngx_http_request_t *r, ngx_str_t *res,
         max = ngx_atosz(v[2].data, v[2].len);
         if (max == NGX_ERROR) {
             ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                          "array_split: invalid max items: \"%V\"",
+                          "array_split: invalid max items: \"%v\"",
                           &v[2]);
 
             return NGX_ERROR;
@@ -445,7 +500,7 @@ ngx_http_array_var_split(ngx_http_request_t *r, ngx_str_t *res,
         len = max;
     }
 
-    array = ngx_array_create(r->pool, len, sizeof(ngx_str_t));
+    array = ngx_http_array_var_create(r, len, res);
     if (array == NULL) {
         return NGX_ERROR;
     }
@@ -515,9 +570,6 @@ done:
     dd("split: array size: %d", (int) array->nelts);
     dd("split array ptr: %p", array);
 
-    res->data = (u_char *) array;
-    res->len = sizeof(ngx_array_t);
-
     return NGX_OK;
 }
 
@@ -540,15 +592,14 @@ ngx_http_array_var_map(ngx_http_request_t *r, ngx_str_t *res,
         return NGX_OK;
     }
 
-    if (v[0].len != sizeof(ngx_array_t)) {
+    array = ngx_http_array_var_get(&v[0]);
+    if (array == NULL) {
         ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                      "array_join: invalid array variable value in the 2nd "
-                      "argument: \"%.*s\"", &v[0]);
+                      "array_map: invalid array variable value in the 2nd "
+                      "argument: \"%v\"", &v[0]);
 
         return NGX_ERROR;
     }
-
-    array = (ngx_array_t *) v[0].data;
 
     value = array->elts;
 
@@ -559,10 +610,11 @@ ngx_http_array_var_map(ngx_http_request_t *r, ngx_str_t *res,
 
     if (conf->in_place) {
         new_array = array;
+        res->data = v[0].data;
+        res->len = v[0].len;
 
     } else {
-        new_array = ngx_array_create(r->pool, array->nelts,
-                                     sizeof(ngx_str_t));
+        new_array = ngx_http_array_var_create(r, array->nelts, res);
         if (new_array == NULL) {
             return NGX_ERROR;
         }
@@ -600,9 +652,6 @@ ngx_http_array_var_map(ngx_http_request_t *r, ngx_str_t *res,
     array_it->not_found = 1;
     array_it->valid = 0;
 
-    res->data = (u_char *) new_array;
-    res->len = sizeof(ngx_array_t);
-
     return NGX_OK;
 }
 
@@ -632,24 +681,24 @@ ngx_http_array_var_map_op(ngx_http_request_t *r,
         return NGX_ERROR;
     }
 
-    if (v[1].len != sizeof(ngx_array_t)) {
+    array = ngx_http_array_var_get(&v[1]);
+    if (array == NULL) {
         ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
                       "array_map_op: invalid array variable value in the 2nd "
-                      "argument: \"%.*s\"", &v[0]);
+                      "argument: \"%v\"", &v[1]);
 
         return NGX_ERROR;
     }
-
-    array = (ngx_array_t *) v[1].data;
 
     value = array->elts;
 
     if (conf->in_place) {
         new_array = array;
+        res->data = v[1].data;
+        res->len = v[1].len;
 
     } else {
-        new_array = ngx_array_create(r->pool, array->nelts,
-                                     sizeof(ngx_str_t));
+        new_array = ngx_http_array_var_create(r, array->nelts, res);
         if (new_array == NULL) {
             return NGX_ERROR;
         }
@@ -677,9 +726,6 @@ ngx_http_array_var_map_op(ngx_http_request_t *r,
         }
     }
 
-    res->data = (u_char *) new_array;
-    res->len = sizeof(ngx_array_t);
-
     return NGX_OK;
 }
 
@@ -699,15 +745,14 @@ ngx_http_array_var_join(ngx_http_request_t *r,
 
     dd("sep %.*s", sep->len, sep->data);
 
-    if (v[1].len != sizeof(ngx_array_t)) {
+    array = ngx_http_array_var_get(&v[1]);
+    if (array == NULL) {
         ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
                       "array_join: invalid array variable value in the "
-                      "2nd argument: \"%V\"", &v[1]);
+                      "2nd argument: \"%v\"", &v[1]);
 
         return NGX_ERROR;
     }
-
-    array = (ngx_array_t *) v[1].data;
 
     dd("join array ptr %p", array);
     dd("array->nelts: %d", (int) array->nelts);

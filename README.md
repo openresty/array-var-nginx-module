@@ -57,8 +57,8 @@ Description
 
 This module provides array typed nginx variables to `nginx.conf`.
 
-Under the hood, this module just "abuses" the nginx string values to hold binary pointers
-to C data structures (NGINX core's `ngx_array_t` struct on the C land).
+Under the hood, this module uses nginx string values to hold tagged references
+to NGINX core's `ngx_array_t` structures.
 
 The array type gives `nginx.onf` wonderful capabilities of handling value lists. Nowadays, however,
 you are highly recommended to use the [ngx_lua](https://github.com/openresty/lua-nginx-module) module

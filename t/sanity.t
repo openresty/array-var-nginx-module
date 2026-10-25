@@ -369,3 +369,125 @@ GET /foo?names=bob,marry,nomas
 --- response_body
 "bob"+"marry"+"nomas"
 
+
+
+=== TEST 25: copied array reference
+--- config
+    location /foo {
+        array_split ',' 'a,b,c' to=$items;
+        set $alias "$items";
+        array_join ':' $alias to=$out;
+        echo $out;
+    }
+--- request
+GET /foo
+--- response_body
+a:b:c
+
+
+
+=== TEST 26: internal redirect preserves an array reference
+--- config
+    location /foo {
+        array_split ',' 'a,b,c' to=$items;
+        rewrite ^ /finish last;
+    }
+
+    location /finish {
+        array_join ':' $items to=$out;
+        echo $out;
+    }
+--- request
+GET /foo
+--- response_body
+a:b:c
+
+
+
+=== TEST 27: named location preserves an array reference
+--- config
+    location /foo {
+        error_page 418 = @finish;
+        array_split ',' 'a,b,c' to=$items;
+        return 418;
+    }
+
+    location @finish {
+        array_map '[$array_it]' $items;
+        array_join ':' $items to=$out;
+        echo $out;
+    }
+--- request
+GET /foo
+--- response_body
+[a]:[b]:[c]
+
+
+
+=== TEST 28: parent and subrequest arrays share a pool
+--- config
+    location /foo {
+        array_split ',' 'a,b,c' to=$items;
+        array_join ':' $items to=$parent_out;
+        echo_location /child;
+        echo $parent_out;
+    }
+
+    location /child {
+        array_split ',' 'd,e' to=$items;
+        rewrite ^ /child-finish last;
+    }
+
+    location /child-finish {
+        array_join ':' $items to=$out;
+        echo $out;
+    }
+--- request
+GET /foo
+--- response_body
+d:e
+a:b:c
+
+
+
+=== TEST 29: mapped arrays and the original remain valid
+--- config
+    location /foo {
+        array_split ',' 'a,b,c' to=$items;
+        array_map '[$array_it]' $items to=$mapped;
+        array_map_op set_quote_sql_str $mapped to=$quoted;
+        array_join ':' $items to=$original;
+        array_join ':' $mapped to=$mapped_out;
+        array_join ':' $quoted to=$quoted_out;
+        echo "$original|$mapped_out|$quoted_out";
+    }
+--- request
+GET /foo
+--- response_body
+a:b:c|[a]:[b]:[c]|'[a]':'[b]':'[c]'
+
+
+
+=== TEST 30: a copied array reference survives creation of many arrays
+--- config eval
+my $config = q!
+    location /foo {
+        array_split ',' 'first,second' to=$array;
+        set $alias "$array";
+!;
+
+for (1 .. 512) {
+    $config .= q!        array_split ',' 'x,y' to=$scratch;
+!;
+}
+
+$config . q!
+        array_map '[$array_it]' $alias;
+        array_join ':' $array to=$out;
+        echo $out;
+    }
+!;
+--- request
+GET /foo
+--- response_body
+[first]:[second]
